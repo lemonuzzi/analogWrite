@@ -2,6 +2,8 @@
 #define PWM_MIN_DUTY      50
 #define PWM_START_DUTY    100
 
+//testing commit
+
 int bldc_step = 0;
 
 //Outputs
