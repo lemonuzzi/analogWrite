@@ -39,8 +39,8 @@ void setup() {
   pinMode(in3, OUTPUT);
 
   // inputs from motor using on-chip ADC 
-  pinMode(digital2, INPUT);
-  pinMode(digital3, INPUT);
+  pinMode(analog2, INPUT);
+  pinMode(analog3, INPUT);
   pinMode(dig7, INPUT);
 
   // virtual neutral point for comparator circuit
