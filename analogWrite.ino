@@ -9,20 +9,20 @@
 int bldc_step = 0;
 
 //Outputs
-int en1 = 5;   //EN1 (Pin 5)
-int en2 = 11;  //EN2 (Pin 11)
-int en3 = 12   //EN3 (Pin 12)
-int in1 = 15;  //IN1 (Pin 15)
-int in2 = 16;  //IN2 (Pin 16) 
-int in3 = 17;  //IN3 (Pin 17)
+int en1 = 5;   //EN1 (Pin D3)
+int en2 = 11;  //EN2 (Pin D5)
+int en3 = 12   //EN3 (Pin D6)
+int in1 = 15;  //IN1 (Pin D9)
+int in2 = 16;  //IN2 (Pin D10) 
+int in3 = 17;  //IN3 (Pin D11)
 
 //Virtual neutral point
-int vnn = 6; 
+int vnn = 6; //(Pin D4) 
 
 //Inputs
-int dig7 = 7;    //ADC1
-int analog2 = 2;  //ADC2
-int analog3 = 3;  //ADC3
+int dig7 = 13;    //ADC1 (Pin D7)
+int analog2 = 25;  //ADC2 (Pin A2)
+int analog3 = 26;  //ADC3 (Pin A3)
 
 //duty values
 int duty = PWM_START_DUTY; 
@@ -73,7 +73,6 @@ void bldc_move(){
 
 void loop() {
   bldc_move();
-  Serial.println("Case :" + bldc_step);
   bldc_step++;
   bldc_step %= 6;
 }
@@ -85,7 +84,7 @@ void varyDuty(){
 // 6-STEP CASES
 void AH_CL(){
   digitalWrite(en1, HIGH);
-  digitalWrite(en2, HIGH);
+  digitalWrite(en2, LOW);
   digitalWrite(en3, LOW);
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
