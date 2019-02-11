@@ -11,7 +11,7 @@ int bldc_step = 0;
 //Outputs
 int en1 = 5;   //EN1 (Pin D3)
 int en2 = 11;  //EN2 (Pin D5)
-int en3 = 12   //EN3 (Pin D6)
+int en3 = 12;  //EN3 (Pin D6)
 int in1 = 15;  //IN1 (Pin D9)
 int in2 = 16;  //IN2 (Pin D10) 
 int in3 = 17;  //IN3 (Pin D11)
