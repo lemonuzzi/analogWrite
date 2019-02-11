@@ -6,7 +6,7 @@
 
 //testing commit
 
-int bldc_step = 1;
+int bldc_step = 0;
 
 //Outputs
 int en1 = 3;   //EN1
