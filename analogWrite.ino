@@ -9,12 +9,12 @@
 int bldc_step = 0;
 
 //Outputs
-int en1 = 3;   //EN1
-int en2 = 4;   //EN2
-int en3 = 5;   //EN3
-int in1 = 9;   //IN1
-int in2 = 10;  //IN2  
-int in3 = 11;  //IN3
+int en1 = 5;   //EN1 (Pin 5)
+int en2 = 11;  //EN2 (Pin 11)
+int en3 = 12   //EN3 (Pin 12)
+int in1 = 15;  //IN1 (Pin 15)
+int in2 = 16;  //IN2 (Pin 16) 
+int in3 = 17;  //IN3 (Pin 17)
 
 //Virtual neutral point
 int vnn = 6; 
