@@ -51,22 +51,22 @@ void setup() {
 void bldc_move(){        
   switch(bldc_step){
     case 0:
-      AH_BL();
-      break;
-    case 1:
       AH_CL();
       break;
-    case 2:
+    case 1:
       BH_CL();
       break;
-    case 3:
+    case 2:
       BH_AL();
       break;
-    case 4:
+    case 3:
       CH_AL();
       break;
-    case 5:
+    case 4:
       CH_BL();
+      break;
+    case 5:
+      AH_BL();
       break;
   }
 }
@@ -85,9 +85,9 @@ void varyDuty(){
 void AH_CL(){
   digitalWrite(en1, HIGH);
   digitalWrite(en2, LOW);
-  digitalWrite(en3, LOW);
+  digitalWrite(en3, HIGH);
   digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
 }
 
 void BH_CL(){
@@ -127,5 +127,5 @@ void AH_BL(){
   digitalWrite(en2, HIGH);
   digitalWrite(en3, LOW);
   digitalWrite(in1, HIGH);
-  digitalWrite(in3, LOW);
+  digitalWrite(in2, LOW);
 }
