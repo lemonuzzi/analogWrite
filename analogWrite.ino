@@ -1,3 +1,5 @@
+#include <TimerOne.h>
+
 #define PWM_MAX_DUTY      255
 #define PWM_MIN_DUTY      50
 #define PWM_START_DUTY    100
@@ -37,8 +39,8 @@ void setup() {
   pinMode(in3, OUTPUT);
 
   // inputs from motor using on-chip ADC 
-  pinMode(analog2, INPUT);
-  pinMode(analog3, INPUT);
+  pinMode(digital2, INPUT);
+  pinMode(digital3, INPUT);
   pinMode(dig7, INPUT);
 
   // virtual neutral point for comparator circuit
@@ -82,49 +84,49 @@ void varyDuty(){
 
 // 6-STEP CASES
 void AH_CL(){
-  analogWrite(en1, HIGH);
-  analogWrite(en2, HIGH);
-  analogWrite(en3, LOW);
-  analogWrite(in1, HIGH);
-  analogWrite(in2, LOW);
+  digitalWrite(en1, HIGH);
+  digitalWrite(en2, HIGH);
+  digitalWrite(en3, LOW);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
 }
 
 void BH_CL(){
-  analogWrite(en1, LOW);
-  analogWrite(en2, HIGH);
-  analogWrite(en3, HIGH);
-  analogWrite(in2, HIGH);
-  analogWrite(in3, LOW);
+  digitalWrite(en1, LOW);
+  digitalWrite(en2, HIGH);
+  digitalWrite(en3, HIGH);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
 }
 
 void BH_AL(){
-  analogWrite(en1, HIGH);
-  analogWrite(en2, HIGH);
-  analogWrite(en3, LOW);
-  analogWrite(in1, LOW);
-  analogWrite(in2, HIGH);
+  digitalWrite(en1, HIGH);
+  digitalWrite(en2, HIGH);
+  digitalWrite(en3, LOW);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
 }
 
 void CH_AL(){
-  analogWrite(en1, HIGH);
-  analogWrite(en2, LOW);
-  analogWrite(en3, HIGH);
-  analogWrite(in1, LOW);
-  analogWrite(in3, HIGH);
+  digitalWrite(en1, HIGH);
+  digitalWrite(en2, LOW);
+  digitalWrite(en3, HIGH);
+  digitalWrite(in1, LOW);
+  digitalWrite(in3, HIGH);
 }
 
 void CH_BL(){
-  analogWrite(en1, LOW);
-  analogWrite(en2, HIGH);
-  analogWrite(en3, HIGH);
-  analogWrite(in2, LOW);
-  analogWrite(in3, HIGH);
+  digitalWrite(en1, LOW);
+  digitalWrite(en2, HIGH);
+  digitalWrite(en3, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
 }
 
 void AH_BL(){
-  analogWrite(en1, HIGH);
-  analogWrite(en2, HIGH);
-  analogWrite(en3, LOW);
-  analogWrite(in1, HIGH);
-  analogWrite(in3, LOW);
+  digitalWrite(en1, HIGH);
+  digitalWrite(en2, HIGH);
+  digitalWrite(en3, LOW);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in3, LOW);
 }
