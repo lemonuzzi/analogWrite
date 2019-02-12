@@ -1,4 +1,4 @@
-#include <TimerOne.h>
+//#include <TimerOne.h>
 
 #define PWM_MAX_DUTY      255
 #define PWM_MIN_DUTY      50
@@ -9,15 +9,15 @@
 int bldc_step = 0;
 
 //Outputs
-int en1 = 5;   //EN1 (Pin D3)
-int en2 = 11;  //EN2 (Pin D5)
-int en3 = 12;  //EN3 (Pin D6)
-int in1 = 15;  //IN1 (Pin D9)
-int in2 = 16;  //IN2 (Pin D10) 
-int in3 = 17;  //IN3 (Pin D11)
+int en1 = 2;   //EN1 (Pin D3)
+int en2 = 3;  //EN2 (Pin D5)
+int en3 = 4;  //EN3 (Pin D6)
+int in1 = 9;  //IN1 (Pin D9)
+int in2 = 10;  //IN2 (Pin D10)
+int in3 = 11;  //IN3 (Pin D11)
 
 //Virtual neutral point
-int vnn = 6; //(Pin D4) 
+int vnn = 6; //(Pin D4)
 
 //Inputs
 int dig7 = 13;    //ADC1 (Pin D7)
@@ -25,7 +25,7 @@ int analog2 = 25;  //ADC2 (Pin A2)
 int analog3 = 26;  //ADC3 (Pin A3)
 
 //duty values
-int duty = PWM_START_DUTY; 
+int duty = PWM_START_DUTY;
 
 void setup() {
   // enable
@@ -33,12 +33,12 @@ void setup() {
   pinMode(en2, OUTPUT);
   pinMode(en3, OUTPUT);
 
-  // PWM pins 
+  // PWM pins
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
 
-  // inputs from motor using on-chip ADC 
+  // inputs from motor using on-chip ADC
   pinMode(analog2, INPUT);
   pinMode(analog3, INPUT);
   pinMode(dig7, INPUT);
@@ -48,8 +48,8 @@ void setup() {
 }
 
 // BLDC motor commutation function
-void bldc_move(){        
-  switch(bldc_step){
+void bldc_move() {
+  switch (bldc_step) {
     case 0:
       AH_CL();
       break;
@@ -74,15 +74,18 @@ void bldc_move(){
 void loop() {
   bldc_move();
   bldc_step++;
-  bldc_step %= 6;
+  if (bldc_step == 6) {
+    bldc_step = 0;
+  }
+  delay(10);
 }
 
 // Vary duty cycle based on closed-loop parameters
-void varyDuty(){ 
+void varyDuty() {
 }
 
 // 6-STEP CASES
-void AH_CL(){
+void AH_CL() {
   digitalWrite(en1, HIGH);
   digitalWrite(en2, LOW);
   digitalWrite(en3, HIGH);
@@ -90,7 +93,7 @@ void AH_CL(){
   digitalWrite(in3, LOW);
 }
 
-void BH_CL(){
+void BH_CL() {
   digitalWrite(en1, LOW);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, HIGH);
@@ -98,7 +101,7 @@ void BH_CL(){
   digitalWrite(in3, LOW);
 }
 
-void BH_AL(){
+void BH_AL() {
   digitalWrite(en1, HIGH);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, LOW);
@@ -106,7 +109,7 @@ void BH_AL(){
   digitalWrite(in2, HIGH);
 }
 
-void CH_AL(){
+void CH_AL() {
   digitalWrite(en1, HIGH);
   digitalWrite(en2, LOW);
   digitalWrite(en3, HIGH);
@@ -114,7 +117,7 @@ void CH_AL(){
   digitalWrite(in3, HIGH);
 }
 
-void CH_BL(){
+void CH_BL() {
   digitalWrite(en1, LOW);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, HIGH);
@@ -122,7 +125,7 @@ void CH_BL(){
   digitalWrite(in3, HIGH);
 }
 
-void AH_BL(){
+void AH_BL() {
   digitalWrite(en1, HIGH);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, LOW);
