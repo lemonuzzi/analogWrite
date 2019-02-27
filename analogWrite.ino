@@ -7,6 +7,7 @@
 //testing commit
 
 int bldc_step = 0;
+unsigned int i;
 
 //Outputs
 int en1 = 2;  //EN1 (Pin D3)
@@ -72,6 +73,15 @@ void bldc_move() {
 }
 
 void loop() {
+  i = 5000;
+  // Ramp motor to start
+  while(i > 100) {
+    delayMicroseconds(i);
+    bldc_move();
+    bldc_step++;
+    bldc_step%6;
+    i = i - 20;
+  }
   bldc_move();
   bldc_step++;
   if (bldc_step == 6) {
