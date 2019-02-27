@@ -12,7 +12,7 @@ int bldc_step = 0;
 int en1 = 2;  //EN1 (Pin D3)
 int en2 = 3;  //EN2 (Pin D5)
 int en3 = 4;  //EN3 (Pin D6)
-int in1 = 9;  //IN1 (Pin D9)
+int in1 = 9 ;  //IN1 (Pin D9)
 int in2 = 10;  //IN2 (Pin D10)
 int in3 = 11;  //IN3 (Pin D11)
 
@@ -49,7 +49,7 @@ void setup() {
 
 // BLDC motor commutation function
 void bldc_move() {
-  switch (bldc_step) {
+   switch(bldc_step){
     case 0:
       AH_CL();
       break;
@@ -77,7 +77,7 @@ void loop() {
   if (bldc_step == 6) {
     bldc_step = 0;
   }
-  delay(5);
+  delayMicroseconds(280);
 }
 
 // Vary duty cycle based on closed-loop parameters
@@ -86,49 +86,49 @@ void varyDuty() {
 
 // 6-STEP CASES
 void AH_CL() {
-  digitalWrite(in1, HIGH);
-  digitalWrite(in3, LOW);
   digitalWrite(en1, HIGH);
   digitalWrite(en2, LOW);
   digitalWrite(en3, HIGH);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in3, LOW);
 }
 
 void BH_CL() {
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, LOW);
   digitalWrite(en1, LOW);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, HIGH);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
 }
 
 void BH_AL() {
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
   digitalWrite(en1, HIGH);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, LOW);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
 }
 
 void CH_AL() {
-  digitalWrite(in1, LOW);
-  digitalWrite(in3, HIGH);
   digitalWrite(en1, HIGH);
   digitalWrite(en2, LOW);
   digitalWrite(en3, HIGH);
+  digitalWrite(in1, LOW);
+  digitalWrite(in3, HIGH);
 }
 
 void CH_BL() {
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, HIGH);
   digitalWrite(en1, LOW);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
 }
 
 void AH_BL() {
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
   digitalWrite(en1, HIGH);
   digitalWrite(en2, HIGH);
   digitalWrite(en3, LOW);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
 }
