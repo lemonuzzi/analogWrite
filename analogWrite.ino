@@ -9,14 +9,6 @@
 int bldc_step = 0;
 int i = 10000;
 
-//Outputs
-int en1 = 2;  //EN1 (Pin D3)
-int en2 = 3;  //EN2 (Pin D5)
-int en3 = 4;  //EN3 (Pin D6)
-int in1 = 9 ;  //IN1 (Pin D9)
-int in2 = 10;  //IN2 (Pin D10)
-int in3 = 11;  //IN3 (Pin D11)
-
 //Virtual neutral point
 int vnn = 6; //(Pin D4)
 
@@ -30,11 +22,9 @@ int duty = PWM_START_DUTY;
 
 void setup() {
   Serial.begin(9600);
-  
-  // enable
-  pinMode(en1, OUTPUT);
-  pinMode(en2, OUTPUT);
-  pinMode(en3, OUTPUT);
+    
+  //Outputs
+  DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs
 
   // PWM pins
   pinMode(in1, OUTPUT);
