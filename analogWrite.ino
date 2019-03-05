@@ -7,7 +7,7 @@
 //testing commit
 
 int bldc_step = 0;
-unsigned int i;
+int i = 10000;
 
 //Outputs
 int en1 = 2;  //EN1 (Pin D3)
@@ -29,6 +29,8 @@ int analog3 = 26;  //ADC3 (Pin A3)
 int duty = PWM_START_DUTY;
 
 void setup() {
+  Serial.begin(9600);
+  
   // enable
   pinMode(en1, OUTPUT);
   pinMode(en2, OUTPUT);
@@ -50,7 +52,7 @@ void setup() {
 
 // BLDC motor commutation function
 void bldc_move() {
-   switch(bldc_step){
+  switch (bldc_step) {
     case 0:
       AH_CL();
       break;
@@ -73,21 +75,18 @@ void bldc_move() {
 }
 
 void loop() {
-  i = 5000;
-  // Ramp motor to start
-  while(i > 100) {
+  // Motor start
+  while (i >= 1000) {
     delayMicroseconds(i);
     bldc_move();
     bldc_step++;
-    bldc_step%6;
-    i = i - 20;
+    bldc_step %= 6;
+    if (i > 1000){
+      i = i - 20;
+    } 
   }
-  bldc_move();
-  bldc_step++;
-  if (bldc_step == 6) {
-    bldc_step = 0;
-  }
-  delayMicroseconds(280);
+  
+  //delayMicroseconds(280);
 }
 
 // Vary duty cycle based on closed-loop parameters
