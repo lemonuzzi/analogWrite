@@ -7,7 +7,7 @@
 //testing commit
 
 int bldc_step = 0;
-int i = 10000;
+int i = 6000;
 
 //Virtual neutral point
 int vnn = 6; //(Pin D4)
@@ -23,13 +23,13 @@ int duty = PWM_START_DUTY;
 void setup() {
   Serial.begin(9600);
     
-  //Outputs
+  //Enable pins
   DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs
+  PORTD = B00000000;
 
-  // PWM pins
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(in3, OUTPUT);
+  //Input pins
+  DDRB = B00001110;    // Configure pins 9, 10 and 11 as outputs
+  PORTB = B00000000;
 
   // inputs from motor using on-chip ADC
   pinMode(analog2, INPUT);
@@ -66,17 +66,16 @@ void bldc_move() {
 
 void loop() {
   // Motor start
-  while (i >= 1000) {
+  while (i >= 20) {
     delayMicroseconds(i);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    if (i > 1000){
+    if (i > 20){
       i = i - 20;
     } 
+    Serial.println(i);
   }
-  
-  //delayMicroseconds(280);
 }
 
 // Vary duty cycle based on closed-loop parameters
@@ -85,49 +84,31 @@ void varyDuty() {
 
 // 6-STEP CASES
 void AH_CL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, LOW);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in3, LOW);
+  PORTD = B00010100;
+  PORTB = B00000010;
 }
 
 void BH_CL() {
-  digitalWrite(en1, LOW);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, LOW);
+  PORTD = B00011000;
+  PORTB = B00000100;
 }
 
 void BH_AL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, LOW);
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+  PORTD = B00001100;
+  PORTB = B00000100;
 }
 
 void CH_AL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, LOW);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in1, LOW);
-  digitalWrite(in3, HIGH);
+  PORTD = B00010100;
+  PORTB = B00001000;
 }
 
 void CH_BL() {
-  digitalWrite(en1, LOW);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, HIGH);
+  PORTD = B00011000;
+  PORTB = B00001000;
 }
 
 void AH_BL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, LOW);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
+  PORTD = B00001100;
+  PORTB = B00000010;
 }
