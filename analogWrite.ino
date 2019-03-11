@@ -38,10 +38,12 @@ void setup() {
   TCCR2A = 0;
   TCCR2B = 0x01;
 
+  int duty = 255;
+  
   //Set PWM Duty cycle
-  OCR1A = 175; //Pin 9
-  OCR1B = 175; //Pin 10
-  OCR2A = 175; //Pin 11
+  OCR1A = duty; //Pin 9
+  OCR1B = duty; //Pin 10
+  OCR2A = duty; //Pin 11
 
   // inputs from motor using on-chip ADC
   pinMode(analog2, INPUT);
@@ -78,12 +80,13 @@ void bldc_move() {
 
 void loop() {
   // Motor start
-  while (i >= 20) {
+  
+  while (i >= 200) {
     delayMicroseconds(i);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    if (i > 20){
+    if (i > 200){
       i = i - 20;
     } 
     Serial.println(i);
@@ -98,29 +101,35 @@ void varyDuty() {
 void AH_CL() {
   PORTD = B00010100;
   PORTB = B00000010;
+  TCCR1A = B10000001;
 }
 
 void BH_CL() {
   PORTD = B00011000;
   PORTB = B00000100;
+  TCCR1A = B00100001;
 }
 
 void BH_AL() {
   PORTD = B00001100;
   PORTB = B00000100;
+  TCCR1A = B00100001;
 }
 
 void CH_AL() {
   PORTD = B00010100;
   PORTB = B00001000;
+  TCCR2A = B10000001;
 }
 
 void CH_BL() {
   PORTD = B00011000;
   PORTB = B00001000;
+  TCCR2A = B10000001;
 }
 
 void AH_BL() {
   PORTD = B00001100;
   PORTB = B00000010;
+  TCCR1A = B10000001;
 }
