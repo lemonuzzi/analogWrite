@@ -59,11 +59,11 @@ ISR (ANALOG_COMP_vect) {
   // BEMF debounce
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
-      if (!(ACSR & 0x20)) 
+      if (!(ACSR & 0x20))
         i -= 1;
     }
     else {
-      if ((ACSR & 0x20))  
+      if ((ACSR & 0x20))
         i -= 1;
     }
   }
@@ -104,7 +104,18 @@ void bldc_move() {
 }
 
 void loop() {
-  // Motor start
+  // Motor start & Run
+//  while (i >= 200) {
+//    delayMicroseconds(i);
+//    bldc_move();
+//    bldc_step++;
+//    bldc_step %= 6;
+//    if (i > 200) {
+//      i = i - 20;
+//    }
+//    Serial.println(i);
+//  }
+
   while (i >= 100) {
     delayMicroseconds(i);
     bldc_move();
