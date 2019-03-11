@@ -9,14 +9,6 @@
 int bldc_step = 0;
 int i = 6000;
 
-//Virtual neutral point
-int vnn = 6; //(Pin D4)
-
-//Inputs
-int dig7 = 13;    //ADC1 (Pin D7)
-int analog2 = 25;  //ADC2 (Pin A2)
-int analog3 = 26;  //ADC3 (Pin A3)
-
 //duty values
 int duty = PWM_START_DUTY;
 
@@ -44,18 +36,9 @@ void setup() {
   OCR2A = duty; //Pin 11
 
   ACSR   = 0x10;           // Disable and clear (flag bit) analog comparator interrupt
-
-  // inputs from motor using on-chip ADC
-  pinMode(analog2, INPUT);
-  pinMode(analog3, INPUT);
-  pinMode(dig7, INPUT);
-
-  // virtual neutral point for comparator circuit
-  pinMode(vnn, OUTPUT);
 }
 
 ISR (ANALOG_COMP_vect) {
-  Serial.println("ISR Top");
   // BEMF debounce
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
@@ -70,7 +53,6 @@ ISR (ANALOG_COMP_vect) {
   bldc_move();
   bldc_step++;
   bldc_step %= 6;
-  Serial.println("ISR Bottom");
 }
 
 // BLDC motor commutation function
@@ -116,12 +98,12 @@ void loop() {
 //    Serial.println(i);
 //  }
 
-  while (i >= 100) {
+  while (i >= 200) {
     delayMicroseconds(i);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    i = i - 10;
+    i = i - 20;
     Serial.println(i);
   }
   ACSR |= 0x08;                    // Enable analog comparator interrupt
