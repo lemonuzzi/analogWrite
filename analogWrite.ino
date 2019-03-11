@@ -2,7 +2,7 @@
 
 #define PWM_MAX_DUTY      255
 #define PWM_MIN_DUTY      50
-#define PWM_START_DUTY    100
+#define PWM_START_DUTY    255
 
 //testing commit
 
@@ -22,8 +22,8 @@ int duty = PWM_START_DUTY;
 
 void setup() {
   Serial.begin(9600);
-    
-  //Enable pins 
+
+  //Enable pins
   DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs (Enables)
   PORTD = B00000000;   // (EN1=Pin 2, EN2=Pin 3, EN3=Pin 4)
 
@@ -38,12 +38,12 @@ void setup() {
   TCCR2A = 0;
   TCCR2B = 0x01;
 
-  int duty = 255;
-  
   //Set PWM Duty cycle
   OCR1A = duty; //Pin 9
   OCR1B = duty; //Pin 10
   OCR2A = duty; //Pin 11
+
+  ACSR   = 0x10;           // Disable and clear (flag bit) analog comparator interrupt
 
   // inputs from motor using on-chip ADC
   pinMode(analog2, INPUT);
@@ -54,47 +54,106 @@ void setup() {
   pinMode(vnn, OUTPUT);
 }
 
+ISR (ANALOG_COMP_vect) {
+  Serial.println("ISR Top");
+  // BEMF debounce
+  for (i = 0; i < 10; i++) {
+    if (bldc_step & 1) {
+      if (!(ACSR & 0x20)) 
+        i -= 1;
+    }
+    else {
+      if ((ACSR & 0x20))  
+        i -= 1;
+    }
+  }
+  bldc_move();
+  bldc_step++;
+  bldc_step %= 6;
+  Serial.println("ISR Bottom");
+}
+
 // BLDC motor commutation function
 void bldc_move() {
   switch (bldc_step) {
     case 0:
-      AH_CL();
+      AH_BL();
+      BEMF_C_RISING();
       break;
     case 1:
-      BH_CL();
+      AH_CL();
+      BEMF_B_FALLING();
       break;
     case 2:
-      BH_AL();
+      BH_CL();
+      BEMF_A_RISING();
       break;
     case 3:
-      CH_AL();
+      BH_AL();
+      BEMF_C_FALLING();
       break;
     case 4:
-      CH_BL();
+      CH_AL();
+      BEMF_B_RISING();
       break;
     case 5:
-      AH_BL();
+      CH_BL();
+      BEMF_A_FALLING();
       break;
   }
 }
 
 void loop() {
   // Motor start
-  
-  while (i >= 200) {
+  while (i >= 100) {
     delayMicroseconds(i);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    if (i > 200){
-      i = i - 20;
-    } 
+    i = i - 10;
     Serial.println(i);
+  }
+  ACSR |= 0x08;                    // Enable analog comparator interrupt
+  while (1) {
+    Serial.println("While loop");
   }
 }
 
 // Vary duty cycle based on closed-loop parameters
 void varyDuty() {
+}
+
+void BEMF_A_RISING() {
+  ADCSRB = (0 << ACME);    // Select AIN1 as comparator negative input
+  ACSR |= 0x03;            // Set interrupt on rising edge
+}
+void BEMF_A_FALLING() {
+  ADCSRB = (0 << ACME);    // Select AIN1 as comparator negative input
+  ACSR &= ~0x01;           // Set interrupt on falling edge
+}
+void BEMF_B_RISING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 2;              // Select analog channel 2 as comparator negative input
+  ACSR |= 0x03;
+}
+void BEMF_B_FALLING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 2;              // Select analog channel 2 as comparator negative input
+  ACSR &= ~0x01;
+}
+void BEMF_C_RISING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 3;              // Select analog channel 3 as comparator negative input
+  ACSR |= 0x03;
+}
+void BEMF_C_FALLING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 3;              // Select analog channel 3 as comparator negative input
+  ACSR &= ~0x01;
 }
 
 // 6-STEP CASES
