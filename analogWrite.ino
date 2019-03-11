@@ -23,13 +23,25 @@ int duty = PWM_START_DUTY;
 void setup() {
   Serial.begin(9600);
     
-  //Enable pins
-  DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs
-  PORTD = B00000000;
+  //Enable pins 
+  DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs (Enables)
+  PORTD = B00000000;   // (EN1=Pin 2, EN2=Pin 3, EN3=Pin 4)
 
   //Input pins
-  DDRB = B00001110;    // Configure pins 9, 10 and 11 as outputs
-  PORTB = B00000000;
+  DDRB = B00001110;    // Configure pins 9, 10 and 11 as outputs (Inputs)
+  PORTB = B00000000;   // (IN1=INA=Pin 9, IN2=INB=Pin 10, IN3=INB=Pin 11)
+
+  // Timer1 module setting: set clock source to clkI/O / 1 (no prescaling)
+  TCCR1A = 0;
+  TCCR1B = 0x01;
+  // Timer2 module setting: set clock source to clkI/O / 1 (no prescaling)
+  TCCR2A = 0;
+  TCCR2B = 0x01;
+
+  //Set PWM Duty cycle
+  OCR1A = 175; //Pin 9
+  OCR1B = 175; //Pin 10
+  OCR2A = 175; //Pin 11
 
   // inputs from motor using on-chip ADC
   pinMode(analog2, INPUT);
