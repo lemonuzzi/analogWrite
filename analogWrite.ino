@@ -6,14 +6,9 @@
 
 //testing commit
 
-int bldc_step = 0;
-int i = 7000;
+int bldc_step = 0, i_prep = 0, i = 920, duty = PWM_START_DUTY;
 int sensorValue;
-int i_prep = 0;
-
-
-//duty values
-int duty = PWM_START_DUTY;
+volatile int i_zEvent = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -39,6 +34,10 @@ void setup() {
 
 ISR (ANALOG_COMP_vect) {
   // BEMF debounce
+  i_zEvent++;
+  if (i_zEvent < 3){
+    return;
+  }
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
       if (!(ACSR & 0x20))
@@ -107,18 +106,20 @@ void loop() {
     setDuty();
   }
   
-  // Ramp up sequence
+  // Ramp up sequence (FSM for 24 steps)
   while (i >= 200) {
     delayMicroseconds(i);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
     i = i - 20;
+    if (i=440){
+      // Enable analog comparator interrupt
+      ACSR |= 0x08;
+    }
     Serial.println(i);
   }
-  
-  // Enable analog comparator interrupt
-  ACSR |= 0x08;                    
+                 
   while (1) {
 
   }
