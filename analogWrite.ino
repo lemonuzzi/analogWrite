@@ -6,8 +6,8 @@
 
 //testing commit
 
-int bldc_step = 0, i_prep = 0, i = 920, duty = PWM_START_DUTY;
-int sensorValue;
+int bldc_step = 0, i_prep = 0, i_ramp = 2000, duty = PWM_START_DUTY;
+int sensorValue, i;
 volatile int i_zEvent = 0;
 
 void setup() {
@@ -34,8 +34,9 @@ void setup() {
 
 ISR (ANALOG_COMP_vect) {
   // BEMF debounce
-  i_zEvent++;
-  if (i_zEvent < 3){
+  if (i_zEvent < 2){
+    i_zEvent++;
+    Serial.println(i_zEvent);
     return;
   }
   for (i = 0; i < 10; i++) {
@@ -97,27 +98,24 @@ void loop() {
 //  }
 
   // Prespositioning Section
-  setDuty();
-  while(i_prep < 17){
-    AH_BL_CL();
-    duty = duty + 15
-    i++;
-    delay(10);
+  while(i_prep < 51){
     setDuty();
+    AH_BL_CL();
+    duty = duty + 5;
+    i_prep++;
+    delay(20);
   }
-  
-  // Ramp up sequence (FSM for 24 steps)
-  while (i >= 200) {
-    delayMicroseconds(i);
+  // Ramp up sequence (FSM for 24 steps out of 36)
+  while (i_ramp >= 200) {
+    delayMicroseconds(i_ramp);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    i = i - 20;
-    if (i=440){
+    i_ramp = i_ramp - 20;
+    if (i_ramp == 440){
       // Enable analog comparator interrupt
       ACSR |= 0x08;
     }
-    Serial.println(i);
   }
                  
   while (1) {
@@ -205,7 +203,7 @@ void AH_BL() {
 
 //Motor Prepositioning case
 void AH_BL_CL() {
-  PORTD = B000011100;
-  PORTB = BB00000010;
+  PORTD = B00011100;
+  PORTB = B00000010;
   TCCR1A = B10000001;
 }
