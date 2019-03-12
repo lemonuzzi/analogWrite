@@ -6,7 +6,7 @@
 
 //testing commit
 
-int bldc_step = 0, i_prep = 0, i_ramp = 2000, duty = PWM_START_DUTY;
+int bldc_step = 0, i_prep = 0, i_ramp = 3000, duty = PWM_START_DUTY;
 int sensorValue, i;
 volatile int i_zEvent = 0;
 
@@ -33,12 +33,13 @@ void setup() {
 }
 
 ISR (ANALOG_COMP_vect) {
-  // BEMF debounce
+  // Makes sure there are at least 2 Zero-Crossing events before we switch to autocommutate mode
   if (i_zEvent < 2){
     i_zEvent++;
-    Serial.println(i_zEvent);
     return;
   }
+  Serial.println("In ISR");
+  // BEMF debounce
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
       if (!(ACSR & 0x20))
@@ -85,28 +86,20 @@ void bldc_move() {
 }
 
 void loop() {
-  // Motor start & Run (For testing)
-//  while (i >= 200) {
-//    delayMicroseconds(i);
-//    bldc_move();
-//    bldc_step++;
-//    bldc_step %= 6;
-//    if (i > 200) {
-//      i = i - 20;
-//    }
-//    Serial.println(i);
+  
+  // Prespositioning Section
+//  while(duty < 230){
+//    setDuty();
+//    AH_BL_CL();
+//    duty = pow(1.2,i_prep);
+//    i_prep++;
+//    delayMicroseconds(15);
+//    Serial.println(duty);
 //  }
 
-  // Prespositioning Section
-  while(i_prep < 51){
-    setDuty();
-    AH_BL_CL();
-    duty = duty + 5;
-    i_prep++;
-    delay(20);
-  }
   // Ramp up sequence (FSM for 24 steps out of 36)
   while (i_ramp >= 200) {
+    Serial.println(i_ramp);
     delayMicroseconds(i_ramp);
     bldc_move();
     bldc_step++;
@@ -116,10 +109,13 @@ void loop() {
       // Enable analog comparator interrupt
       ACSR |= 0x08;
     }
+    if (i_zEvent == 2){
+      break;
+    }
   }
-                 
+                  
   while (1) {
-
+    
   }
 }
 
