@@ -7,14 +7,15 @@
 //testing commit
 
 int bldc_step = 0;
-int i = 6000;
+int i = 7000;
+int sensorValue;
 
 //duty values
 int duty = PWM_START_DUTY;
 
 void setup() {
   Serial.begin(9600);
-
+  
   //Enable pins
   DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs (Enables)
   PORTD = B00000000;   // (EN1=Pin 2, EN2=Pin 3, EN3=Pin 4)
@@ -39,6 +40,7 @@ void setup() {
 }
 
 ISR (ANALOG_COMP_vect) {
+  Serial.println("ISR Top");
   // BEMF debounce
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
@@ -53,6 +55,7 @@ ISR (ANALOG_COMP_vect) {
   bldc_move();
   bldc_step++;
   bldc_step %= 6;
+  Serial.println("ISR Bottom");
 }
 
 // BLDC motor commutation function
@@ -108,7 +111,7 @@ void loop() {
   }
   ACSR |= 0x08;                    // Enable analog comparator interrupt
   while (1) {
-    Serial.println("While loop");
+
   }
 }
 
