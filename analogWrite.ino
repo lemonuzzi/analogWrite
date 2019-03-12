@@ -40,7 +40,6 @@ void setup() {
 }
 
 ISR (ANALOG_COMP_vect) {
-  Serial.println("ISR Top");
   // BEMF debounce
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
@@ -55,7 +54,6 @@ ISR (ANALOG_COMP_vect) {
   bldc_move();
   bldc_step++;
   bldc_step %= 6;
-  Serial.println("ISR Bottom");
 }
 
 // BLDC motor commutation function
@@ -186,5 +184,12 @@ void CH_BL() {
 void AH_BL() {
   PORTD = B00001100;
   PORTB = B00000010;
+  TCCR1A = B10000001;
+}
+
+//Motor Prepositioning case
+void AH_BL_CL() {
+  PORTD = B000011100;
+  PORTB = BB00000010;
   TCCR1A = B10000001;
 }
