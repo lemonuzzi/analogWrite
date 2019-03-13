@@ -37,7 +37,6 @@ int duty = PWM_START_DUTY;
 int bldc_step = 0, i_prep = 0, i_ramp = 3000, duty = PWM_START_DUTY;
 int sensorValue, i;
 volatile int i_zEvent = 0;
->>>>>>> 540db13021fe35d745cbc25561ed052b029bf5c8
 
 void setup() {
   Serial.begin(9600);
