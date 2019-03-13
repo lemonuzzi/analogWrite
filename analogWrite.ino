@@ -1,4 +1,6 @@
 //#include <TimerOne.h>
+//No PWM, motor constant spin code
+//DP-group29-Leo&Fred
 
 #define PWM_MAX_DUTY      255
 #define PWM_MIN_DUTY      50
@@ -24,6 +26,9 @@ int vnn = 6; //(Pin D4)
 int dig7 = 13;    //ADC1 (Pin D7)
 int analog2 = 25;  //ADC2 (Pin A2)
 int analog3 = 26;  //ADC3 (Pin A3)
+
+//Timers and Interrupts
+
 
 //duty values
 int duty = PWM_START_DUTY;
@@ -72,6 +77,10 @@ void bldc_move() {
       AH_BL();
       break;
   }
+}
+
+ISR(TIMER1_COMPA_vect) {
+  
 }
 
 void loop() {
