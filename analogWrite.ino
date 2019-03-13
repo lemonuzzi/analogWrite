@@ -4,10 +4,11 @@
 
 #define PWM_MAX_DUTY      255
 #define PWM_MIN_DUTY      50
-#define PWM_START_DUTY    100
+#define PWM_START_DUTY    0
 
 //testing commit
 
+<<<<<<< HEAD
 int bldc_step = 0;
 int i = 10000;
 
@@ -32,49 +33,83 @@ int analog3 = 26;  //ADC3 (Pin A3)
 
 //duty values
 int duty = PWM_START_DUTY;
+=======
+int bldc_step = 0, i_prep = 0, i_ramp = 3000, duty = PWM_START_DUTY;
+int sensorValue, i;
+volatile int i_zEvent = 0;
+>>>>>>> 540db13021fe35d745cbc25561ed052b029bf5c8
 
 void setup() {
   Serial.begin(9600);
   
-  // enable
-  pinMode(en1, OUTPUT);
-  pinMode(en2, OUTPUT);
-  pinMode(en3, OUTPUT);
+  // Enable pins
+  DDRD = B00011100;    // Configure pins 2, 3 and 4 as outputs (Enables)
+  PORTD = B00000000;   // (EN1=Pin 2, EN2=Pin 3, EN3=Pin 4)
 
-  // PWM pins
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(in3, OUTPUT);
+  // Input pins
+  DDRB = B00001110;    // Configure pins 9, 10 and 11 as outputs (Inputs)
+  PORTB = B00000000;   // (IN1=INA=Pin 9, IN2=INB=Pin 10, IN3=INB=Pin 11)
 
-  // inputs from motor using on-chip ADC
-  pinMode(analog2, INPUT);
-  pinMode(analog3, INPUT);
-  pinMode(dig7, INPUT);
+  // Timer1 module setting: set clock source to clkI/O / 1 (no prescaling)
+  TCCR1A = 0;
+  TCCR1B = 0x01;
+  // Timer2 module setting: set clock source to clkI/O / 1 (no prescaling)
+  TCCR2A = 0;
+  TCCR2B = 0x01;
+  
+  // Disable and clear (flag bit) analog comparator interrupt
+  ACSR   = 0x10;           
+}
 
-  // virtual neutral point for comparator circuit
-  pinMode(vnn, OUTPUT);
+ISR (ANALOG_COMP_vect) {
+  // Makes sure there are at least 2 Zero-Crossing events before we switch to autocommutate mode
+  if (i_zEvent < 2){
+    i_zEvent++;
+    return;
+  }
+  Serial.println("In ISR");
+  // BEMF debounce
+  for (i = 0; i < 10; i++) {
+    if (bldc_step & 1) {
+      if (!(ACSR & 0x20))
+        i -= 1;
+    }
+    else {
+      if ((ACSR & 0x20))
+        i -= 1;
+    }
+  }
+  bldc_move();
+  bldc_step++;
+  bldc_step %= 6;
 }
 
 // BLDC motor commutation function
 void bldc_move() {
   switch (bldc_step) {
     case 0:
-      AH_CL();
+      AH_BL();
+      BEMF_C_RISING();
       break;
     case 1:
-      BH_CL();
+      AH_CL();
+      BEMF_B_FALLING();
       break;
     case 2:
-      BH_AL();
+      BH_CL();
+      BEMF_A_RISING();
       break;
     case 3:
-      CH_AL();
+      BH_AL();
+      BEMF_C_FALLING();
       break;
     case 4:
-      CH_BL();
+      CH_AL();
+      BEMF_B_RISING();
       break;
     case 5:
-      AH_BL();
+      CH_BL();
+      BEMF_A_FALLING();
       break;
   }
 }
@@ -84,69 +119,120 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 void loop() {
-  // Motor start
-  while (i >= 1000) {
-    delayMicroseconds(i);
+  
+  // Prespositioning Section
+//  while(duty < 230){
+//    setDuty();
+//    AH_BL_CL();
+//    duty = pow(1.2,i_prep);
+//    i_prep++;
+//    delayMicroseconds(15);
+//    Serial.println(duty);
+//  }
+
+  // Ramp up sequence (FSM for 24 steps out of 36)
+  while (i_ramp >= 200) {
+    Serial.println(i_ramp);
+    delayMicroseconds(i_ramp);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    if (i > 1000){
-      i = i - 20;
-    } 
+    i_ramp = i_ramp - 20;
+    if (i_ramp == 440){
+      // Enable analog comparator interrupt
+      ACSR |= 0x08;
+    }
+    if (i_zEvent == 2){
+      break;
+    }
   }
-  
-  //delayMicroseconds(280);
+                  
+  while (1) {
+    
+  }
 }
 
 // Vary duty cycle based on closed-loop parameters
-void varyDuty() {
+void setDuty() {
+  //Set PWM Duty cycle
+  OCR1A = duty; //Pin 9
+  OCR1B = duty; //Pin 10
+  OCR2A = duty; //Pin 11
+}
+
+void BEMF_A_RISING() {
+  ADCSRB = (0 << ACME);    // Select AIN1 as comparator negative input
+  ACSR |= 0x03;            // Set interrupt on rising edge
+}
+void BEMF_A_FALLING() {
+  ADCSRB = (0 << ACME);    // Select AIN1 as comparator negative input
+  ACSR &= ~0x01;           // Set interrupt on falling edge
+}
+void BEMF_B_RISING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 2;              // Select analog channel 2 as comparator negative input
+  ACSR |= 0x03;
+}
+void BEMF_B_FALLING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 2;              // Select analog channel 2 as comparator negative input
+  ACSR &= ~0x01;
+}
+void BEMF_C_RISING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 3;              // Select analog channel 3 as comparator negative input
+  ACSR |= 0x03;
+}
+void BEMF_C_FALLING() {
+  ADCSRA = (0 << ADEN);   // Disable the ADC module
+  ADCSRB = (1 << ACME);
+  ADMUX = 3;              // Select analog channel 3 as comparator negative input
+  ACSR &= ~0x01;
 }
 
 // 6-STEP CASES
 void AH_CL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, LOW);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in3, LOW);
+  PORTD = B00010100;
+  PORTB = B00000010;
+  TCCR1A = B10000001;
 }
 
 void BH_CL() {
-  digitalWrite(en1, LOW);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, LOW);
+  PORTD = B00011000;
+  PORTB = B00000100;
+  TCCR1A = B00100001;
 }
 
 void BH_AL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, LOW);
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+  PORTD = B00001100;
+  PORTB = B00000100;
+  TCCR1A = B00100001;
 }
 
 void CH_AL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, LOW);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in1, LOW);
-  digitalWrite(in3, HIGH);
+  PORTD = B00010100;
+  PORTB = B00001000;
+  TCCR2A = B10000001;
 }
 
 void CH_BL() {
-  digitalWrite(en1, LOW);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, HIGH);
+  PORTD = B00011000;
+  PORTB = B00001000;
+  TCCR2A = B10000001;
 }
 
 void AH_BL() {
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, HIGH);
-  digitalWrite(en3, LOW);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
+  PORTD = B00001100;
+  PORTB = B00000010;
+  TCCR1A = B10000001;
+}
+
+//Motor Prepositioning case
+void AH_BL_CL() {
+  PORTD = B00011100;
+  PORTB = B00000010;
+  TCCR1A = B10000001;
 }
