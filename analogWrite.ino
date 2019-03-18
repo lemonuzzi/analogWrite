@@ -6,14 +6,6 @@
 #define PWM_MIN_DUTY      50
 #define PWM_START_DUTY    255
 
-//Virtual neutral point
-int vnn = 6; //(Pin D4)
-
-//Inputs
-int dig7 = 13;    //ADC1 (Pin D7)
-int analog2 = 25;  //ADC2 (Pin A2)
-int analog3 = 26;  //ADC3 (Pin A3)
-
 //duty values
 int bldc_step = 0, i_prep = 0, i_ramp = 3000, i_zLimit = 2, i_period = 200, duty = PWM_START_DUTY;
 int sensorValue, i;
@@ -24,7 +16,7 @@ volatile unsigned long time1 ;
 volatile unsigned long time2 ;
 
 volatile boolean valid1 = false ;
-volatile boolean valid2 = false ;
+
 
 void setup() {
   Serial.begin(9600);
@@ -53,6 +45,14 @@ ISR (ANALOG_COMP_vect) {
   if (i_zEvent < i_zLimit){
     i_zEvent++;
     return;
+  }
+  if (!valid1){
+    time1 = micros();
+    valid1 = true;
+  }
+  else {
+    time2 = micros();
+    valid1 = false;
   }
   Serial.println("In ISR");
   // BEMF debounce
@@ -123,7 +123,9 @@ void loop() {
   }
                   
   while (1) {
-    
+    while ((time1-time2)> 0){
+      Serial.println(time1-time2);
+    }
   }
 }
 
