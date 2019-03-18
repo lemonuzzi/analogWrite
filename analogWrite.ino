@@ -19,6 +19,13 @@ int bldc_step = 0, i_prep = 0, i_ramp = 3000, i_zLimit = 2, i_period = 200, duty
 int sensorValue, i;
 volatile int i_zEvent = 0;
 
+//Speed controller timer variables
+volatile unsigned long time1 ;
+volatile unsigned long time2 ;
+
+volatile boolean valid1 = false ;
+volatile boolean valid2 = false ;
+
 void setup() {
   Serial.begin(9600);
   
@@ -95,7 +102,6 @@ void bldc_move() {
 }
 
 void loop() {
-  
 
   setDuty();
   
