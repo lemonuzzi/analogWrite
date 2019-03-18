@@ -2,13 +2,13 @@
 
 #define PWM_MAX_DUTY      255
 #define PWM_MIN_DUTY      50
-#define PWM_START_DUTY    0
+#define PWM_START_DUTY    255
 
 //testing commit
 
-int bldc_step = 0, i_prep = 0, i_ramp = 3000, duty = PWM_START_DUTY;
+int bldc_step = 0, i_prep = 0, i_ramp = 4000, i_period = 200, duty = PWM_START_DUTY;
 int sensorValue, i;
-volatile int i_zEvent = 0;
+volatile int i_zEvent = 0, i_zLimit = 3;
 
 void setup() {
   Serial.begin(9600);
@@ -34,7 +34,7 @@ void setup() {
 
 ISR (ANALOG_COMP_vect) {
   // Makes sure there are at least 2 Zero-Crossing events before we switch to autocommutate mode
-  if (i_zEvent < 2){
+  if (i_zEvent < i_zLimit){
     i_zEvent++;
     return;
   }
@@ -87,35 +87,36 @@ void bldc_move() {
 
 void loop() {
   
-  // Prespositioning Section
-//  while(duty < 230){
+//  // Prespositioning Section
+//  while (duty < 255 ) {
 //    setDuty();
 //    AH_BL_CL();
-//    duty = pow(1.2,i_prep);
-//    i_prep++;
+//    duty = duty + 15;
 //    delayMicroseconds(15);
 //    Serial.println(duty);
 //  }
 
+  setDuty();
+  
   // Ramp up sequence (FSM for 24 steps out of 36)
-  while (i_ramp >= 200) {
+  while (i_ramp > i_period) {
     Serial.println(i_ramp);
     delayMicroseconds(i_ramp);
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    i_ramp = i_ramp - 20;
+    i_ramp = i_ramp - 10;
     if (i_ramp == 440){
       // Enable analog comparator interrupt
       ACSR |= 0x08;
     }
-    if (i_zEvent == 2){
+    if (i_zEvent == i_zLimit){
       break;
     }
   }
                   
   while (1) {
-    
+
   }
 }
 
@@ -200,6 +201,6 @@ void AH_BL() {
 //Motor Prepositioning case
 void AH_BL_CL() {
   PORTD = B00011100;
-  PORTB = B00000010;
+  PORTB = B00001000;
   TCCR1A = B10000001;
 }
