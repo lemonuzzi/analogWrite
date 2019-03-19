@@ -1,4 +1,3 @@
-//#include <TimerOne.h>
 //No PWM, motor constant spin code
 //DP-group29-Leo&Fred
 
@@ -7,13 +6,14 @@
 #define PWM_START_DUTY    255
 
 //duty values
-int bldc_step = 0, i_prep = 0, i_ramp = 3000, i_zLimit = 2, i_period = 200, duty = PWM_START_DUTY;
+int bldc_step = 0, i_ramp = 800, i_zLimit = 3, i_period = 250, duty = PWM_START_DUTY;
 int sensorValue, i;
 volatile int i_zEvent = 0;
 
 //Speed controller timer variables
 volatile unsigned long time1 ;
 volatile unsigned long time2 ;
+volatile unsigned long elapsed;
 
 volatile boolean valid1 = false ;
 
@@ -52,9 +52,11 @@ ISR (ANALOG_COMP_vect) {
   }
   else {
     time2 = micros();
+    elapsed = time2 - time1;
     valid1 = false;
   }
   Serial.println("In ISR");
+  Serial.println(duty);
   // BEMF debounce
   for (i = 0; i < 10; i++) {
     if (bldc_step & 1) {
@@ -112,7 +114,7 @@ void loop() {
     bldc_move();
     bldc_step++;
     bldc_step %= 6;
-    i_ramp = i_ramp - 20;
+    i_ramp = i_ramp - 10;
     if (i_ramp == 440){
       // Enable analog comparator interrupt
       ACSR |= 0x08;
@@ -122,16 +124,32 @@ void loop() {
     }
   }
                   
-  while (1) {
-    while ((time1-time2)> 0){
-      Serial.println(time1-time2);
+  while (1) {  
+    if (!valid1){
+      if (elapsed < i_period){
+        duty--;
+        setDuty();
+        //Serial.println("Slower");
+      }
+      else if (elapsed > i_period){
+        duty++;
+        setDuty();
+        //Serial.println("Faster");
+      }
     }
   }
 }
 
-// Vary duty cycle based on closed-loop parameters
+// Vary duty cycle
 void setDuty() {
   //Set PWM Duty cycle
+  if (duty >= 255){
+    duty = 255;
+  }
+  else if( duty <= 100){
+    duty = 100;
+  }
+  
   OCR1A = duty; //Pin 9
   OCR1B = duty; //Pin 10
   OCR2A = duty; //Pin 11
